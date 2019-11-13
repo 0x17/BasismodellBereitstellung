@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using OPTANO.Modeling.Optimization;
 using OPTANO.Modeling.Optimization.Enums;
@@ -73,10 +74,34 @@ namespace BasismodellBereitstellung.BaseModel
 
                     // Repair xor order
                     model.AddConstraint(Expression.Sum(periods.Select(t => z[asset, component, t] + y[asset, component, t])) == 1, "repair_xor_order_{asset}_{component}");
+                    
+                    // Repair only after arrival
+                    model.AddConstraint(Expression.Sum(NotAvailablePeriods(asset, component).Select(t => z[asset, component, t])) == 0);
+                }
+            }
+
+            Expression RepairActive(Asset asset, Component component, int period)
+            {
+                return Expression.Sum(periods
+                    .Where(tau => tau >= period && tau <= period + component.RepairDuration[asset] - 1)
+                    .Select(tau => z[asset, component, tau]));
+            }
+
+            foreach (var component in components)
+            {
+                foreach (var period in periods)
+                {
+                    // No parallel repairs (capacity restriction, one machine per component)
+                    model.AddConstraint(Expression.Sum(assets.Select(asset => RepairActive(asset, component, period))) <= 1);
                 }
             }
         }
-        
+
+        private IEnumerable<int> NotAvailablePeriods(Asset asset, Component component)
+        {
+            return periods.Where(t => t < component.ReleaseDate[asset]);
+        }
+
         private Solution ExtractSolution(OPTANO.Modeling.Optimization.Solution sol)
         {
             int StartPeriodFromVar(VariableCollection<Asset, Component, int> vname, int i, int k)
