@@ -1,9 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.XPath;
 
-namespace BasismodellBereitstellung.DataModel
+namespace BasismodellBereitstellung.BaseModel
 {
+    /// <summary>
+    /// A component (module, stage) of a complex good (asset). Some attributes are specific to the parent asset, like
+    /// the release date (arrival after disassembling) and repair duration in time units (periods).
+    /// Components typically arrive from the outmost to the most central component, meaning that for example in an
+    /// aircraft turbine the fan arrives first.
+    /// </summary>
     public class Component
     {
         /// <summary>
@@ -26,6 +31,14 @@ namespace BasismodellBereitstellung.DataModel
         /// </summary>
         public readonly double OrderCosts;
 
+        /// <summary>
+        /// Constructor with asset specific values in arrays.
+        /// </summary>
+        /// <param name="assets">Complex goods.</param>
+        /// <param name="releaseDates">Release dates of this component for each good (asset).</param>
+        /// <param name="repairDurations">Repair durations of this component for each good (asset).</param>
+        /// <param name="orderDuration">Asset independent duration of one unit order of this component.</param>
+        /// <param name="orderCosts">Cost of one unit order of this component in monetary units.</param>
         public Component(Asset[] assets, int[] releaseDates, int[] repairDurations, int orderDuration, double orderCosts)
         {
             ReleaseDate = new Dictionary<Asset, int>(releaseDates.Select((rd, i) => new KeyValuePair<Asset,int>(assets[i], rd))); 
@@ -33,7 +46,7 @@ namespace BasismodellBereitstellung.DataModel
             OrderDuration = orderDuration;
             OrderCosts = orderCosts;
         }
-
+        
         public Component(Dictionary<Asset, int> releaseDate, Dictionary<Asset, int> repairDuration, int orderDuration, double orderCosts)
         {
             ReleaseDate = releaseDate;

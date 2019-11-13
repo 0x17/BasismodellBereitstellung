@@ -1,5 +1,9 @@
-namespace BasismodellBereitstellung.DataModel
+namespace BasismodellBereitstellung.BaseModel
 {
+    /// <summary>
+    /// Complex good built out of multiple components. The good must be repaired before the due date. Is the delivery
+    /// date after the due date, then contractual penalty costs must be paid for each delayed period.
+    /// </summary>
     public class Asset
     {
         /// <summary>
